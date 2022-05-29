@@ -1,0 +1,67 @@
+---
+openapi: 3.0.0
+info:
+  title: COPENICUS API
+  description: Project COPENICUS API
+  contact:
+    name: Giuseppe Zileni
+    email: giuseppe.zileni@gmail.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+servers:
+- url: ''
+  description: COPENICUS API
+tags:
+- name: assets
+  description: Secured Admin-only calls
+- name: services
+  description: Operations available to regular developers
+paths:
+  /pollution:
+    post:
+      tags:
+      - copernicus
+      - pollution
+      - sentinel5P
+      summary: get copenicurs data by pollution from sentinel 5P
+      description: get intersect geometry and measurement with assets
+      operationId: assetsId
+      requestBody:
+        description: Get COPENICUS DATA
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SchemaItem'
+      responses:
+        "200":
+          description: assets downloaded
+        "400":
+          description: invalid input, object invalid
+components:
+  schemas:
+    ServicesItem:
+      type: object
+      properties:
+        wms:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServicesItem_wms'
+        wfs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServicesItem_wms'
+    SchemaItem:
+      type: object
+      properties:
+        filter:
+          $ref: '#/components/schemas/SchemaItem_filter'
+        bbox:
+          type: array
+          items:
+            type: number
+        coordinates:
+          type: array
+          items:
+            type: number
