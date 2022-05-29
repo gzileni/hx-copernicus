@@ -8,9 +8,6 @@ module.exports = async (fastify, opts) => {
 
   // Do not touch the following lines
 
-  fastify.decorate('sql', require('./utils/sql'));
-  fastify.decorate('utils', require('./utils/utils'));
-  
   /**
    * This loads all plugins defined in plugins
    * those should be support plugins that are reused

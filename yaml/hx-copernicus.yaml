@@ -13,55 +13,213 @@ info:
 servers:
 - url: ''
   description: COPENICUS API
-tags:
-- name: assets
-  description: Secured Admin-only calls
-- name: services
-  description: Operations available to regular developers
 paths:
   /pollution:
     post:
-      tags:
-      - copernicus
-      - pollution
-      - sentinel5P
       summary: get copenicurs data by pollution from sentinel 5P
       description: get intersect geometry and measurement with assets
-      operationId: assetsId
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: filter
+          description: Feature Geometry GeoJSON
+          schema:
+            $ref: '#/components/schemas/Filter' 
+        - in: body
+          name: coordinates
+          description: Array of coordinates
+          schema:
+            $ref: '#/components/schemas/Coordinates'
+        - in: body
+          name: bbox
+          description: BBOX Extent of coordinates
+          schema:
+            $ref: '#/components/schemas/BBox'    
       requestBody:
-        description: Get COPENICUS DATA
+        description: Get Copernicus Data
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SchemaItem'
+              $ref: '#/components/schemas/RequestItem'
       responses:
         "200":
-          description: assets downloaded
+          description: GeoJSON Features
+          content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResponseItem'
         "400":
           description: invalid input, object invalid
 components:
   schemas:
-    ServicesItem:
+    ResponseItem:
       type: object
-      properties:
-        wms:
-          type: array
-          items:
-            $ref: '#/components/schemas/ServicesItem_wms'
-        wfs:
-          type: array
-          items:
-            $ref: '#/components/schemas/ServicesItem_wms'
-    SchemaItem:
-      type: object
-      properties:
-        filter:
-          $ref: '#/components/schemas/SchemaItem_filter'
-        bbox:
-          type: array
-          items:
-            type: number
+      oneOf:
+        - $ref: '#/components/schemas/GeometryCollection'
+        - $ref: '#/components/schemas/FeatureCollection'
+    
+    Position:
+      description: "A single position"
+      type: "array"
+      minItems: 2
+      items: 
+        type: number
+      additionalItems: false
+    
+    PositionArray: 
+      description: "An array of positions"
+      type: array
+      items: 
+        $ref: "#/components/schemas/Position"
+
+    LinearRing:
+      description: "An array of four positions where the first equals the last"
+      allOf: 
+        $ref: '#/components/schemas/PositionArray'
+        minItems: 4
+
+    PolygonDef:
+      description: "An array of linear rings"
+      type: array
+      items: 
+        $ref: '#/components/schemas/LinearRing'
+
+    Point:
+      properties: 
+        type: 
+          enum: [ 'Point' ]
+        coordinates: 
+          $ref: '#/components/schemas/Position'
+
+    MultiPoint:
+      properties: 
+        type: 
+          enum: [ "MultiPoint" ] 
+        coordinates: 
+          $ref: '#/components/schemas/PositionArray'
+
+    LineString:
+      properties: 
+        type: 
+          enum: [ "LineString" ]
+        coordinates: 
+          $ref: '#/components/schemas/LineString'
+    
+    MultiLineString:
+      properties: 
+        type: 
+          enum: [ "MultiLineString" ] 
+        coordinates: 
+          type: "array"
+          items: 
+            $ref: "#/components/schemas/LineString" 
+    
+    Polygon:
+      properties: 
+        type: 
+          enum: [ "Polygon" ] 
+        coordinates: 
+          $ref: '#/components/schemas/PolygonDef'
+
+    MultiPolygon:
+      properties: 
+        type:
+          enum: [ "MultiPolygon" ] 
+        coordinates: 
+          type: "array"
+          items: 
+            $ref: "#/components/schemas/Polygon"
+
+    Geometry: 
+      title: "geometry"
+      description: "One geometry as defined by GeoJSON"
+      type: "object"
+      required: [ "type", "coordinates" ]
+      oneOf:
+        - $ref: '#/components/schemas/Point'
+        - $ref: '#/components/schemas/MultiPoint'
+        - $ref: '#/components/schemas/LineString'
+        - $ref: '#/components/schemas/MultiLineString'
+        - $ref: '#/components/schemas/Polygon'
+
+    GeometryCollection: 
+      description: "A collection of geometry objects"
+      required: [ "geometries" ]
+      properties: 
+        type: 
+          enum: [ "GeometryCollection" ] 
+        geometries: 
+          type: "array"
+          items: 
+            $ref: "#/components/schemas/Geometry" 
+      
+    Feature:
+      description: "A Geo JSON feature object"
+      required: [ "geometry", "properties" ]
+      properties: 
+        type: 
+          enum: [ "Feature" ] 
+        geometry: 
+          oneOf: 
+            type: "null" 
+            $ref: "#/components/schemas/Geometry"
+            properties: 
+              type: [ "object", "null" ]
+    
+    FeatureCollection:
+      description: "A Geo JSON feature collection"
+      required: [ "features" ]
+      properties: 
+        type: 
+          enum: [ "FeatureCollection" ] 
+        features: 
+          type: "array"
+          items: 
+            $ref: "#/components/schemas/Feature"
+
+    Filter:
+      type: 'object'
+      properties: 
+        type: 
+          type: string
         coordinates:
           type: array
           items:
-            type: number
+            type: "number"
+    
+    Coordinates:
+      type: array
+      items:
+        type: "number"
+        minItems: 2
+        uniqueItems: true
+    
+    BBox:
+      type: 'array'
+      items:
+          type: "string"
+      minItems: 4
+      uniqueItems: true
+    
+    Range: 
+      type: 'array'
+      items:
+          type: "string"
+      minItems: 2,
+      uniqueItems: true
+    
+    Pollution:
+        type: 'string'
+        enum: ['CO', 'NO2', 'SO2', 'CH4', 'HCHO', 'AER']
+    
+    RequestItem:
+      type: 'object'
+      oneOf:
+        - $ref: '#/components/schemas/Filter'
+        - $ref: '#/components/schemas/Coordinates'
+        - $ref: '#/components/schemas/BBox'
+      allOf:
+        - $ref: '#/components/schemas/Range'
+        - $ref: '#/components/schemas/Pollution'
+      
