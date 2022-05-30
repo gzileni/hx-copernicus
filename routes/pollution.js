@@ -1,7 +1,6 @@
 'use strict'
 
 const _ = require("lodash");
-const assets = require('../config.js')["assets"]
 const turf = require('@turf/turf');
 
 module.exports = async (fastify, opts) => {
@@ -325,6 +324,7 @@ module.exports = async (fastify, opts) => {
      * 
      */
     fastify.post('/pollution', { schema }, (request, reply) => {
+        db.release();
         reply.code(200).send(result.rows[0].json_build_object);
     });
 }
