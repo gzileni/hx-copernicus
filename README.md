@@ -1,6 +1,5 @@
 # HX-WHARP
 
-
 ## Available Scripts
 
 In the project directory, you can run:
@@ -34,65 +33,120 @@ The [API documentation](https://apiwharp.hextra.dev/documentation) is available 
 
 - Filter by GeoJSON:
 
-```bash
-curl --location --request POST 'https://apiwharp.hextra.dev/assets' \
---header 'Content-Type: application/json' \
---data-raw '{
-    "filter": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              7.265396118164062,
-              45.687715074360916
-            ],
-            [
-              7.414398193359375,
-              45.687715074360916
-            ],
-            [
-              7.414398193359375,
-              45.76153533782943
-            ],
-            [
-              7.265396118164062,
-              45.76153533782943
-            ],
-            [
-              7.265396118164062,
-              45.687715074360916
-            ]
-          ]
+```javascript
+var axios = require('axios');
+var data = JSON.stringify({
+  "filter": {
+    "type": "Polygon",
+    "coordinates": [
+      [
+        [
+          7.265396118164062,
+          45.687715074360916
+        ],
+        [
+          7.414398193359375,
+          45.687715074360916
+        ],
+        [
+          7.414398193359375,
+          45.76153533782943
+        ],
+        [
+          7.265396118164062,
+          45.76153533782943
+        ],
+        [
+          7.265396118164062,
+          45.687715074360916
         ]
-      }
-}'
+      ]
+    ]
+  }
+});
+
+var config = {
+  method: 'post',
+  url: 'http://localhost:3001/api',
+  headers: { 
+    'Content-Type': 'application/json'
+  },
+  timeout: 10000,
+  maxRedirects: 0,
+  data : data
+};
+
+axios(config)
+.then(function (response) {
+  console.log(JSON.stringify(response.data));
+})
+.catch(function (error) {
+  console.log(error);
+});
 ```
 
 - Filter by Coordinate
 
-```bash
-curl --location --request POST 'https://apiwharp.hextra.dev/assets/' \
---header 'Content-Type: application/json' \
---data-raw '{
-    "coordinates": [
-        7.265396118164062,
-        45.687715074360916
-    ]
-}'
+```javascript
+var axios = require('axios');
+var data = JSON.stringify({
+  "coordinates": [
+    7.265396118164062,
+    45.687715074360916
+  ]
+});
+
+var config = {
+  method: 'post',
+  url: 'http://localhost:3001/api',
+  headers: { 
+    'Content-Type': 'application/json'
+  },
+  timeout: 10000,
+  maxRedirects: 0,
+  data : data
+};
+
+axios(config)
+.then(function (response) {
+  console.log(JSON.stringify(response.data));
+})
+.catch(function (error) {
+  console.log(error);
+});
+
 ```
 
 - Filter by BBOX:
 
-```bash
-curl --location --request POST 'https://apiwharp.hextra.dev/assets' \
---header 'Content-Type: application/json' \
---data-raw '{
-    "bbox": [
-        7.265396118164062,
-        45.687715074360916,
-        7.414398193359375,
-        45.697715074360916
-    ]
-}'
-```
+```javascript
+var axios = require('axios');
+var data = JSON.stringify({
+  "bbox": [
+    7.265396118164062,
+    45.687715074360916,
+    7.414398193359375,
+    45.697715074360914
+  ]
+});
 
+var config = {
+  method: 'post',
+  url: 'http://localhost:3001/api',
+  headers: { 
+    'Content-Type': 'application/json'
+  },
+  timeout: 10000,
+  maxRedirects: 0,
+  data : data
+};
+
+axios(config)
+.then(function (response) {
+  console.log(JSON.stringify(response.data));
+})
+.catch(function (error) {
+  console.log(error);
+});
+
+```

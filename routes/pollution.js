@@ -37,8 +37,7 @@ module.exports = async (fastify, opts) => {
                 items: {
                     type: "string"
                 },
-                minItems: 2,
-                uniqueItems: true
+                minItems: 2
             },
             pollution: {
                 type: 'string',
@@ -260,7 +259,7 @@ module.exports = async (fastify, opts) => {
         reply.header("Access-Control-Allow-Origin", "*");
         reply.header("Access-Control-Allow-Methods", "POST");
 
-        if (request.body.filter == null || request.body.filter == undefined || request.body.filter == {}) {
+        if (request.body.filter === null || request.body.filter === undefined || request.body.filter == {}) {
             if (request.body.bbox != null && request.body.bbox != undefined) {
                 filter = turf.getGeom(turf.bboxPolygon(request.body.bbox));
             } else if (request.body.coordinates != null && request.body.coordinates != undefined) {
@@ -272,9 +271,12 @@ module.exports = async (fastify, opts) => {
             filter = turf.getGeom(request.body.filter)
         };
 
-        const geom_sql = fastify.sql.sql_by_geojson(filter);
+        /** create filter from geometry */
+        const geom_sql = `SELECT ST_AsText(ST_GeomFromGeoJSON('${JSON.stringify(filter)}')) As wkt`
         const { rows } = await db.query(geom_sql);
         const geometry = rows[0].wkt;
+
+        /** geographical system reference */
         const srid = request.body.srid != null && request.body.srid != undefined ? 
                      request.body.srid : 
                      '4326'
@@ -314,17 +316,17 @@ module.exports = async (fastify, opts) => {
             'type', 'FeatureCollection',
             'features', json_agg(ST_AsGeoJSON(t.*)::json)
             )
-            FROM ( ${sql}) as t(geometry);`
-
-        result = await db.query(sql_geojson)
+            FROM ( ${sql}) as t;`
+        
+        result = await db.query(sql_geojson);
+        db.release();
 
     });
 
     /**
      * 
      */
-    fastify.post('/pollution', { schema }, (request, reply) => {
-        db.release();
+    fastify.post('/copernicus/pollution', { schema }, (request, reply) => {
         reply.code(200).send(result.rows[0].json_build_object);
     });
 }
